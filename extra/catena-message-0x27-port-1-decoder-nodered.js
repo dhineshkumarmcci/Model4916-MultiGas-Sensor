@@ -1,10 +1,16 @@
-// JavaScript source code
-// This Node-RED decoding function decodes the record sent by the Catena 4612
-// simple sensor app.
+/*
+Name:   model4916-decoder-ttn.js
 
-// calculate dewpoint (degrees C) given temperature (C) and relative humidity (0..100)
-// from http://andrew.rsmas.miami.edu/bmcnoldy/Humidity.html
-// rearranged for efficiency and to deal sanely with very low (< 1%) RH
+Function:
+    This function decodes the record (port 1, format 0x27) sent by the
+    MCCI Model 4916 multigas and environment sensor application.
+
+Copyright and License:
+    See accompanying LICENSE file
+
+Author:
+    Dhinesh Kumar Pitchai, MCCI Corporation   November 2022
+*/
 function dewpoint(t, rh) {
     var c1 = 243.04;
     var c2 = 17.625;
@@ -30,59 +36,7 @@ function Decoder(bytes, port) {
 
     if (port === 1) {
         cmd = bytes[0];
-        if (cmd == 0x15) {
-            // decode Catena 4612 M102 data
-
-            // test vectors:
-            //  15 01 18 00 ==> vBat = 1.5
-            //  15 01 F8 00 ==> vBat = -0.5
-            //  15 05 F8 00 42 ==> boot: 66, vBat: -0.5
-            //  15 0D F8 00 42 17 80 59 35 80 ==> adds one temp of 23.5, rh = 50, p = 913.48, tDewC = 12.5
-            //  15 7D 44 60 0D 15 9D 5F CD C3 00 00 1C 11 14 46 E4 ==>
-            //	{
-            //    "boot": 13,
-            //    "error": "none",
-            //    "lux": 0,
-            //    "p": 981,
-            //    "rh": 76.171875,
-            //    "rhSoil": 89.0625,
-            //    "tDewC": 17.236466758309017,
-            //    "tSoil": 20.2734375,
-            //    "tSoilDew": 18.411840342527178,
-            //    "tWater": 28.06640625,
-            //    "tempC": 21.61328125,
-            //    "vBat": 4.2734375,
-            //    }
-            // 15 7D 43 72 07 17 A4 5F CB A7 01 DB 1C 01 16 AF C3
-            //    {
-            //    "boot": 7,
-            //    "error": "none",
-            //    "lux": 475,
-            //    "p": 980.92,
-            //    "rh": 65.234375,
-            //    "rhSoil": 76.171875,
-            //    "tDewC": 16.732001483771757,
-            //    "tSoil": 22.68359375,
-            //    "tSoilDew": 18.271601276518467,
-            //    "tWater": 28.00390625,
-            //    "tempC": 23.640625,
-            //    "vBat": 4.21533203125
-            //    }
-            // 15 7D 42 D4 21 F5 9B 5E 5F C1 00 00 01 C1 F9 1B EC
-            //    {
-            //    "boot": 33,
-            //    "error": "none",
-            //    "lux": 0,
-            //    "p": 966.36,
-            //    "rh": 75.390625,
-            //    "rhSoil": 92.1875,
-            //    "tDewC": -13.909882718758952,
-            //    "tSoil": -6.89453125,
-            //    "tSoilDew": -7.948780789914008,
-            //    "tWater": 1.75390625,
-            //    "tempC": -10.39453125,
-            //    "vBat": 4.1767578125
-            //    }
+        if (cmd == 0x27) {
             // i is used as the index into the message. Start with the flag byte.
             var i = 1;
             // fetch the bitmap.
@@ -100,14 +54,6 @@ function Decoder(bytes, port) {
             }
 
             if (flags & 0x2) {
-                var vRawBus = (bytes[i] << 8) + bytes[i + 1];
-                i += 2;
-                if (vRawBus & 0x8000)
-                    vRawBus += -0x10000;
-                decoded.vBus = vRawBus / 4096.0;
-            }
-
-            if (flags & 0x4) {
                 var iBoot = bytes[i];
                 i += 1;
                 decoded.boot = iBoot;
@@ -130,34 +76,8 @@ function Decoder(bytes, port) {
                 decoded.tDewC = dewpoint(decoded.tempC, decoded.rh);
             }
 
-            if (flags & 0x10) {
-                // we have lux
-                var luxRaw = (bytes[i] << 8) + bytes[i + 1];
-                i += 2;
-                decoded.lux = luxRaw;
-            }
+			// To be continued
 
-            if (flags & 0x20) {
-                // onewire temperature
-                var tempRaw = (bytes[i] << 8) + bytes[i + 1];
-                i += 2;
-                if (tempRaw & 0x8000)
-                    tempRaw = -0x10000 + tempRaw;
-                decoded.tWater = tempRaw / 256;
-            }
-
-            if (flags & 0x40) {
-                // temperature followed by RH
-                var tempRaw = (bytes[i] << 8) + bytes[i + 1];
-                i += 2;
-                if (tempRaw & 0x8000)
-                    tempRaw = -0x10000 + tempRaw;
-                var tempRH = bytes[i];
-                i += 1;
-                decoded.tSoil = tempRaw / 256;
-                decoded.rhSoil = tempRH / 256 * 100;
-                decoded.tSoilDew = dewpoint(decoded.tSoil, decoded.rhSoil);
-            }
         } else {
             node.error("not ours! " + bytes[0].toString());
             return null;
@@ -181,7 +101,7 @@ if ("payload_raw" in msg) {
 var result = Decoder(bytes, msg.port);
 
 if (result === null) {
-    node.error("not port 1/fmt 0x15! port=" + msg.port.toString());
+    node.error("not port 1/fmt 0x27! port=" + msg.port.toString());
 }
 
 // now update msg with the new payload and new .local field
@@ -189,10 +109,10 @@ if (result === null) {
 msg.payload = result;
 msg.local =
     {
-        nodeType: "Catena 4612",
-        platformType: "Catena 461x",
+        nodeType: "Model 4916",
+        platformType: "Model 4916",
         radioType: "Murata",
-        applicationName: "Compost sensor"
+        applicationName: "MultiGas sensor"
     };
 
 return msg;

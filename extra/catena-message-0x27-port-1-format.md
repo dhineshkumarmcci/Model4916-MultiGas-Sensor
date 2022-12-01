@@ -325,23 +325,14 @@ Floating point mavens will immediately recognize:
 
 ## Test Vectors
 
-The following input data can be used to test decoders. Note that "T Dew" (the dewpoint) is computed based on temperature and RH; it's not present in the input data. MCCI's standard decoder generates this, but you may not need this.
-
-|Input | vBat | vBus | Boot | Temp (deg C) | P (mBar) | RH % | T Dew (C) | Light |  Probe T (deg C)  | Soil T (deg C) | Soil RH % | Soil T Dew (deg C) |
-|:-----|-----:|-----:|-----:|-------------:|---------:|-----:|----------:|------:|------------------:|---------------:|----------:|-------------:|
-|`15 01 18 00` | +1.5 | | |  |            |           |      |     |       | |
-|`15 01 F8 00` | -0.5 | | |  |            |           |      |     |       | |
-|`15 05 F8 00 42` | -0.5 |  | 66 |            |           |      |     |       | |
-|`15 0D F8 00 42 17 80 59 35 80` | -0.5 |  |  66 | 23.5 | 913.48 | 50 | 12.479409448936956 |  |  |  |  |  |
-|`15 7D 44 60 0D 15 9D 5F CD C3 00 00 1C 11 14 46 E4` | 4.2734375 | |  13 | 21.61328125 | 981 | 76.171875 | 17.236466758309017 | 0 | 28.06640625 | 20.2734375 | 89.0625 | 18.411840342527178
-|`15 7F 43 72 44 60 07 17 A4 5F CB A7 01 DB 1C 01 16 AF C3` | 4.21533203125 | 4.2734375 | 7 | 23.640625 | 980.92 | 65.234375 | 16.732001483771757 | 475 | 28.00390625 | 22.68359375 | 76.171875 | 18.271601276518467
+<To be added>
 
 ## Node-RED Decoding Script
 
 A Node-RED script to decode this data is part of this repository. You can download the latest version from gitlab:
 
-- in raw form: <https://gitlab-x.mcci.com/client/witchhazel/windsor/ThermoSense-Lorawan/-/raw/master/extra/WeRadiate-decoder-nodered.js>
-- or view it: <https://gitlab-x.mcci.com/client/witchhazel/windsor/ThermoSense-Lorawan/-/blob/master/extra/WeRadiate-decoder-nodered.js>
+- in raw form: <https://raw.githubusercontent.com/dhineshkumarmcci/Model4916-MultiGas-Sensor/main/extra/catena-message-0x27-port-1-decoder-nodered.js>
+- or view it: <https://github.com/dhineshkumarmcci/Model4916-MultiGas-Sensor/blob/main/extra/catena-message-0x27-port-1-decoder-nodered.js>
 
 The MCCI decoders add dewpoint where needed. For historical reasons, the temperature probe data is labled "tWater".
 
@@ -351,7 +342,7 @@ The repository contains the script that decodes format 0x15, for [The Things Net
 
 You can get the latest version on gitlab:
 
-- in raw form: <https://gitlab-x.mcci.com/client/witchhazel/windsor/ThermoSense-Lorawan/-/raw/master/extra/WeRadiate-decoder-ttn.js>
-- or view it: <https://gitlab-x.mcci.com/client/witchhazel/windsor/ThermoSense-Lorawan/-/blob/master/extra/WeRadiate-decoder-ttn.js>
+- in raw form: <https://raw.githubusercontent.com/dhineshkumarmcci/Model4916-MultiGas-Sensor/main/extra/catena-message-0x27-port-1-decoder-ttn.js>
+- or view it: <https://github.com/dhineshkumarmcci/Model4916-MultiGas-Sensor/blob/main/extra/catena-message-0x27-port-1-decoder-ttn.js>
 
 The MCCI decoders add dewpoint where needed. For historical reasons, the temperature probe data is labled "tWater".
